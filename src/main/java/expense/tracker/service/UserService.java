@@ -4,8 +4,10 @@ import expense.tracker.entity.User;
 import expense.tracker.model.RegisterUserRequest;
 import expense.tracker.model.UpdateUserRequest;
 import expense.tracker.model.UserResponse;
+import expense.tracker.model.WebResponse;
 import expense.tracker.repository.UserRepository;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 
-
+@Slf4j
 @Service
 public class UserService {
 
@@ -28,23 +30,23 @@ public class UserService {
     @Autowired
     private Validator validator;
 
+
     @Transactional
     public void registerUser(RegisterUserRequest request){
         validationService.validate(request);
 
         // cek jika emailnya telah terdaftar didalam database maka throw status UNAUTHORIZED
         // jika tidak terdaftar akan dilanjutkan pembuatan user
-        if (userRepository.findById(request.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email already registered");
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already registered");
         }
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
-        user.setUsername(request.getUsername());
-        userRepository.save(user);
-        UserResponse userResponse = new UserResponse();
-        userResponse.setMessage("Successfully registered");
+            User user = new User();
+            user.setEmail(request.getEmail());
+            user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+            user.setUsername(request.getUsername());
+            userRepository.save(user);
+
     }
 
     @Transactional(readOnly = true)
@@ -52,7 +54,6 @@ public class UserService {
         return UserResponse.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
-                .message("Getting user info")
                 .build();
     }
 
@@ -76,7 +77,6 @@ public class UserService {
         return UserResponse.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
-                .message("Successfully updated user info")
                 .build();
     }
 }
