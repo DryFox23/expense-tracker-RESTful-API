@@ -17,7 +17,7 @@ public class JwtService {
     private JwtConfig jwtConfig;
 
     String secretKey = jwtConfig.getSecretKey();
-    long expiration = jwtConfig.getExpiration();
+    long expiration = jwtConfig.getExpiration() * 1000;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
