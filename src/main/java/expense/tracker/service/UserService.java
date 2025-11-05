@@ -28,6 +28,9 @@ public class UserService {
     private ValidationService validationService;
 
     @Autowired
+    private JwtService jwtService;
+
+    @Autowired
     private Validator validator;
 
 
@@ -51,6 +54,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getUser(User user){
+
+        if (user.getToken() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "token is null");
+        }
+
+        if (!jwtService.validateToken(user.getToken())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid or expired token");
+        }
         return UserResponse.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
@@ -59,20 +70,25 @@ public class UserService {
 
 
     @Transactional
-    public UserResponse updateUser(User user, UpdateUserRequest request){
+    public UserResponse updateUser(String userId ,UpdateUserRequest request){
         validationService.validate(request);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
         if (Objects.nonNull(request.getEmail())) {
             user.setEmail(request.getEmail());
         }
 
-        if (Objects.nonNull(request.getPassword())) {
+        if (Objects.nonNull(request.getPassword()) && !request.getPassword().isBlank()) {
             user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
         }
 
         if (Objects.nonNull(request.getUsername())) {
             user.setUsername(request.getUsername());
         }
+
+        userRepository.save(user);
 
         return UserResponse.builder()
                 .email(user.getEmail())
