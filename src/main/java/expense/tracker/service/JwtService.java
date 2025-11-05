@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
@@ -16,28 +17,24 @@ public class JwtService {
     @Autowired
     private JwtConfig jwtConfig;
 
-    String secretKey = jwtConfig.getSecretKey();
-    long expiration = jwtConfig.getExpiration() * 1000;
-
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
-
-    // setup token
-    public String generateToken(String userId, String email){
-        return generateToken(userId, email, expiration);
+        String secretKey = jwtConfig.getSecretKey();
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     // generate token
-    public String generateToken(String userId, String email, long expirationMillis){
+    public String generateToken(String userId, String email){
+        long expiration = jwtConfig.getExpiration() * 1000;
+
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("email", email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMillis))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     // validate token
     public boolean validateToken(String token){
