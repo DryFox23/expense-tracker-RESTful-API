@@ -30,8 +30,6 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
-    @Autowired
-    private Validator validator;
 
 
     @Transactional
