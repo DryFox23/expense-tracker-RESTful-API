@@ -67,7 +67,7 @@ public class ExpenseService {
     public ExpenseResponse updateExpense(User user, UpdateExpenseRequest request, String expenseId){
         validationService.validate(request);
 
-        Expense expense = expenseRepository.findFirstByUserAndId(user, request.getId()).orElseThrow(()->
+        Expense expense = expenseRepository.findFirstByUserAndId(user, expenseId).orElseThrow(()->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "expense not found"));
 
 
