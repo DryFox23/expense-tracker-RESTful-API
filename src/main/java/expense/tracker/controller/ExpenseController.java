@@ -37,7 +37,9 @@ public class ExpenseController {
                 .build();
     }
 
-    @PatchMapping(path = "/api/v1/expenses/update/{expenseId}")
+    @PatchMapping(path = "/api/v1/expenses/update/{expenseId}",
+    produces = MediaType.APPLICATION_JSON_VALUE,
+    consumes = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<ExpenseResponse> updateExpense(User user,
                                                       @RequestBody UpdateExpenseRequest request,
                                                       @PathVariable String expenseId){
@@ -45,6 +47,16 @@ public class ExpenseController {
         return WebResponse.<ExpenseResponse>builder()
                 .message("update expense info")
                 .data(response)
+                .build();
+    }
+
+    @DeleteMapping(path = "/api/v1/expenses/remove/{expenseId}",
+    consumes = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> deleteExpense(User user, @PathVariable String expenseId){
+        expenseService.deleteExpense(user, expenseId);
+        return WebResponse.<String>builder()
+                .message("delete expense")
+                .data("success delete expense")
                 .build();
     }
 }
