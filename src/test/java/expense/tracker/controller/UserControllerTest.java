@@ -55,7 +55,7 @@ public class UserControllerTest {
         request.setPassword("password");
         request.setUsername("username");
 
-        mockMvc.perform(post("/ExpenseTask/users")
+        mockMvc.perform(post("/api/v1/users")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -83,7 +83,7 @@ public class UserControllerTest {
         request.setPassword("password");
         request.setUsername("username");
 
-        mockMvc.perform(post("/ExpenseTask/users")
+        mockMvc.perform(post("/api/v1/users")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
