@@ -4,14 +4,20 @@ import expense.tracker.entity.Expense;
 import expense.tracker.entity.User;
 import expense.tracker.model.CreateExpenseRequest;
 import expense.tracker.model.ExpenseResponse;
+import expense.tracker.model.SearchExpenseRequest;
 import expense.tracker.model.UpdateExpenseRequest;
 import expense.tracker.repository.ExpenseRepository;
+import expense.tracker.repository.UserRepository;
+import expense.tracker.specification.ExpenseSpecification;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,6 +26,8 @@ public class ExpenseService {
     private ValidationService validationService;
     @Autowired
     private ExpenseRepository expenseRepository;
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Transactional
@@ -92,5 +100,28 @@ public class ExpenseService {
         );
 
         expenseRepository.delete(expense);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ExpenseResponse> searchExpense(User user, @Valid SearchExpenseRequest request){
+        validationService.validate(request);
+
+        User checkUser = userRepository.findById(user.getId()).orElseThrow(()->
+                new ResponseStatusException(HttpStatus.NOT_FOUND,"user not found"));
+
+        Specification<Expense> specification = ExpenseSpecification.filterExpense(request, checkUser);
+
+//        Sort sort = Sort.by(Sort.Direction.DESC, "created");
+
+        Pageable pageable = PageRequest.of(request.getPageNumber(), request.getPageSize());
+
+        Page<Expense> expenses = expenseRepository.findAll(specification, pageable);
+
+        List<ExpenseResponse> responses = expenses.getContent()
+                .stream()
+                .map(this::toExpenseResponse)
+                .toList();
+
+        return new PageImpl<>(responses, pageable, expenses.getTotalElements());
     }
 }
