@@ -30,8 +30,6 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
-
-
     @Transactional
     public void registerUser(RegisterUserRequest request){
         validationService.validate(request);
@@ -68,10 +66,10 @@ public class UserService {
 
 
     @Transactional
-    public UserResponse updateUser(String userId ,UpdateUserRequest request){
+    public UserResponse updateUser(User user ,UpdateUserRequest request){
         validationService.validate(request);
 
-        User user = userRepository.findById(userId)
+         user = userRepository.findById(user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
 
         if (Objects.nonNull(request.getEmail())) {
