@@ -21,14 +21,15 @@ public class Expense {
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "expense_type")
+    @Column(name = "expense_type", nullable = false)
     private ExpenseType type;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
     private ExpenseCategory category;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method")
+    @Column(name = "payment_method", nullable = false)
     private ExpensePaymentMethod paymentMethod;
 
     @JoinColumn(name = "user_id", referencedColumnName = "id")
