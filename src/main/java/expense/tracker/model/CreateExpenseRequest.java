@@ -4,7 +4,7 @@ import expense.tracker.entity.ExpenseCategory;
 import expense.tracker.entity.ExpensePaymentMethod;
 import expense.tracker.entity.ExpenseType;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,11 +20,12 @@ import java.time.LocalDate;
 public class CreateExpenseRequest {
 
     @NotBlank
+    @Size(min = 1, max = 100)
     private String title;
     private BigDecimal amount;
     private String description;
     private LocalDate date;
-    private ExpenseType type;
-    private ExpenseCategory category;
-    private ExpensePaymentMethod paymentMethod;
+    private ExpenseType type = ExpenseType.EXPENSE;
+    private ExpenseCategory category = ExpenseCategory.OTHER;
+    private ExpensePaymentMethod paymentMethod = ExpensePaymentMethod.CASH;
 }
