@@ -36,12 +36,12 @@ public class UserController {
                 .build();
     }
 
-    @PatchMapping(path = "/api/v1/users/{userId}",
+    @PatchMapping(path = "/api/v1/users",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<UserResponse> updateDataUser(@PathVariable String userId
+    public WebResponse<UserResponse> updateDataUser(User user
                                                     ,@RequestBody UpdateUserRequest request){
-        UserResponse response = userService.updateUser(userId, request);
+        UserResponse response = userService.updateUser(user, request);
         return WebResponse.<UserResponse>builder()
                 .message("Update Data User")
                 .data(response)
