@@ -21,10 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -266,6 +266,59 @@ public class ExpenseControllerTest {
 
                     Expense cekExpense = expenseRepository.existsById(expense.getId()) ? expense : null;
                     assertNull(cekExpense);
+                });
+    }
+
+    @Test
+    void searchAllExpenses() throws Exception {
+        User user = userRepository.findByEmail("email@email.com").orElse(null);
+
+        for (int i = 0; i < 5; i++) {
+            Expense expense = new Expense();
+            expense.setUser(user);
+            expense.setId(UUID.randomUUID().toString());
+            expense.setTitle("Title" + i);
+            expense.setDescription("Description");
+            expense.setAmount(new BigDecimal(50000.00));
+            expense.setDate(LocalDate.of(2025, 12, 12));
+            expense.setType(ExpenseType.EXPENSE);
+            expense.setCategory(ExpenseCategory.TRANSPORT);
+            expense.setPaymentMethod(ExpensePaymentMethod.EWALLET);
+            expenseRepository.save(expense);
+        }
+
+        mockMvc.perform(get("/api/v1/expenses")
+        .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", authHeader))
+                .andExpectAll(status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<ExpenseResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<ExpenseResponse>>>() {
+                            });
+                    assertNull(response.getErrors());
+                    System.out.println(response.getMessage());
+                    System.out.println(response.getData());
+                    assertEquals(5, response.getData().size());
+                    assertEquals(10, response.getPagingResponse().getTotalSize());
+                    assertEquals(0, response.getPagingResponse().getCurrentPage());
+                });
+    }
+
+    @Test
+    void searchAllExpensesFailed() throws Exception {
+
+        mockMvc.perform(get("/api/v1/expenses")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader))
+                .andExpectAll(status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<ExpenseResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<ExpenseResponse>>>() {
+                            });
+                    assertNotNull(response.getErrors());
+                    System.out.println(response.getErrors());
                 });
     }
 }
